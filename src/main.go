@@ -1,5 +1,9 @@
 package main
 
-func mian() {
-	Test()
+import (
+	"src/database"
+)
+
+func main() {
+	database.Test()
 }
