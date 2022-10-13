@@ -1,2 +1,0 @@
-# Garabedian-Plumecocq-Hangman-
-Hangman 
