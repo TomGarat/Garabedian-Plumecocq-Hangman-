@@ -33,7 +33,7 @@ func avgPixe(img image.Image, x, y, w, h int) int {
 }
 
 func Ascii() {
-	img, err := loadImage("pendu.jpg")
+	img, err := loadImage("src/database/download.png")
 	if err != nil {
 		panic(err)
 	}
