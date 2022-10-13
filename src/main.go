@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	database.Test()
+	database.Init()
 }

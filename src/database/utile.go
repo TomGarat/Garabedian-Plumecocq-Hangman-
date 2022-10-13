@@ -10,7 +10,7 @@ func Test() {
 	fmt.Println("Hello World!")
 }
 
-func RandNumber(i int) {
+func RandNumber(i int) int {
 	rand.Seed(time.Now().UnixNano())
-	rand.Intn(i)
+	return rand.Intn(i)
 }
