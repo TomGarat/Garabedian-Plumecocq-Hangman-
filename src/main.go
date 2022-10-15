@@ -5,5 +5,7 @@ import (
 )
 
 func main() {
-	database.Init()
+	database.Choice()
+	database.Scan()
+	database.Test()
 }

@@ -1,13 +1,13 @@
 package database
 
 var (
-	m Word
+	m = Mots{}
 )
 
-type Word struct {
-	mot string
+type Mots struct {
+	Word []string
 }
 
-func Init() {
-
+func (m *Mots) Init() {
+	m.Word = []string{}
 }
