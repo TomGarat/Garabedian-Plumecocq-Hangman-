@@ -6,20 +6,20 @@ import (
 	"strings"
 )
 
-func Choice() {
-	file, err := os.ReadFile("database/ressource/mots.txt")
-	if err != nil {
-		panic(err)
-	}
-	line := strings.Split(string(file), "\n")
-	i := RandNumber(len(line))
-	m.Word = append(m.Word, line[i])
-}
+// func Choice() {
+// 	file, err := os.ReadFile("database/ressource/mots.txt")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	line := strings.Split(string(file), "\n")
+// 	i := RandNumber(len(line))
+// 	m.Word = append(m.Word, line[i])
+//}
 
-func containsAny(s []string, chars string) bool {
+func containsAny(s string, chars []string) bool {
 	for _, r := range s {
 		for _, c := range chars {
-			if string(c) == r {
+			if string(r) == c {
 				return true
 			}
 		}
@@ -32,35 +32,25 @@ func Join(text []string, sep string) string {
 		return ""
 	}
 	s := ""
-	last := len(s) - 1
-	for _, v := range s[0:last] {
+	lastIdx := len(s) - 1
+	for _, v := range s[0:lastIdx] {
 		s += string(v) + sep
 	}
-	return s + text[last]
+	return s + text[lastIdx]
 }
 
-func gatLtter(Word []string) []string {
+func getLtter(found []string) string {
 	alphabet := "abcdefghijklmnopqrstuvwxyz"
-	letters := []string{}
 	for true {
-		letters = prompt("Enter a letter: ", join(Word, " "))
-		if len(letters) == 1 && containsAny(letters, alphabet) {
-			return letters
-		}
+		letter , err := prompt("Enter une lettre: ", Join(found, " "))
+		if len(letter) == 1 && containsAny(alphabet,  []string{letter}) {
+			return letter
 		fmt.Println("Please enter a single letter from the alphabet.")
 	}
-	return letters
+	return ""
 }
 
-func prompt(prompt string, word string) []string {
-	fmt.Println(word)
-	fmt.Print(prompt)
-	var input string
-	fmt.Scanln(&input)
-	return strings.Split(input, "")
-}
-
-func updateFound(Word []string, found []string, letter string) []string {
+func updateFound(found []string, word []string, letter string) []string {
 	complete := true
 	for i, v := range Word {
 		if v == letter {
@@ -69,4 +59,18 @@ func updateFound(Word []string, found []string, letter string) []string {
 		}
 	}
 	return complete
+}
+
+func prompt(vals ...interface{}) (string, error) {
+	if len (vals) != 0 {
+		fmt.Println(vals...)
+	}
+	sacanner := bufio.NewScanner(os.Stdin)
+	sacanner.Scan()
+	err := sacanner.Err()
+	if err != nil {
+		return "", err
+	}
+	s := sacanner.Text()
+	return s, nil
 }
