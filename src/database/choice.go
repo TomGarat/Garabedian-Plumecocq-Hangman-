@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"text/scanner"
 )
 
 // func Choice() {
@@ -50,6 +51,20 @@ func getLtter(found []string) string {
 	return ""
 }
 
+func prompt(vals ...interface{}) (string, error) {
+	if len(vals) != 0 {
+		fmt.Println(vals...)
+	}
+	sacanner := bufio.NewScanner(os.Stdin)
+	sacanner.Scan()
+	err := sacanner.Err()
+	if err != nil {
+		return "", err
+	}
+	return scanner.Text(), nil
+}
+
+
 func updateFound(found []string, word []string, letter string) []string {
 	complete := true
 	for i, v := range Word {
@@ -59,18 +74,4 @@ func updateFound(found []string, word []string, letter string) []string {
 		}
 	}
 	return complete
-}
-
-func prompt(vals ...interface{}) (string, error) {
-	if len (vals) != 0 {
-		fmt.Println(vals...)
-	}
-	sacanner := bufio.NewScanner(os.Stdin)
-	sacanner.Scan()
-	err := sacanner.Err()
-	if err != nil {
-		return "", err
-	}
-	s := sacanner.Text()
-	return s, nil
 }
