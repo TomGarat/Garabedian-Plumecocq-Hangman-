@@ -48,5 +48,3 @@ func Ascii() {
 		fmt.Println()
 	}
 }
-
-// erreur : format de l'image inconnu et probleme avec la premiere ligne "database" - "main"

@@ -1,11 +1,7 @@
 package main
 
-import (
-	"src/database"
-)
+import "src/database"
 
 func main() {
-	database.Choice()
-	database.Scan()
-	database.Test()
+	database.Play()
 }
