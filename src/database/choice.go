@@ -1,21 +1,22 @@
 package database
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strings"
 	"text/scanner"
 )
 
-// func Choice() {
-// 	file, err := os.ReadFile("database/ressource/mots.txt")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	line := strings.Split(string(file), "\n")
-// 	i := RandNumber(len(line))
-// 	m.Word = append(m.Word, line[i])
-//}
+func Choice() {
+	file, err := os.ReadFile("database/ressource/mots.txt")
+	if err != nil {
+		panic(err)
+	}
+	line := strings.Split(string(file), "\n")
+	i := RandNumber(len(line))
+	m.Word = append(m.Word, line[i])
+}
 
 func containsAny(s string, chars []string) bool {
 	for _, r := range s {
@@ -43,10 +44,11 @@ func Join(text []string, sep string) string {
 func getLtter(found []string) string {
 	alphabet := "abcdefghijklmnopqrstuvwxyz"
 	for true {
-		letter , err := prompt("Enter une lettre: ", Join(found, " "))
-		if len(letter) == 1 && containsAny(alphabet,  []string{letter}) {
+		letter, err := prompt("Enter une lettre: ", Join(found, " "))
+		if len(letter) == 1 && containsAny(alphabet, []string{letter}) {
 			return letter
-		fmt.Println("Please enter a single letter from the alphabet.")
+			fmt.Println("Please enter a single letter from the alphabet.")
+		}
 	}
 	return ""
 }
@@ -63,7 +65,6 @@ func prompt(vals ...interface{}) (string, error) {
 	}
 	return scanner.Text(), nil
 }
-
 
 func updateFound(found []string, word []string, letter string) []string {
 	complete := true
