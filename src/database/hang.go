@@ -14,6 +14,10 @@ import (
 	"time"
 )
 
+var guessed []byte
+var message string = "How's it hanging?"
+var status int = 0
+
 func Play() {
 	playGame()
 }
@@ -31,13 +35,9 @@ func playGame() {
 	word := strings.ToUpper(getWord())
 	letters := []byte(word)
 
-	var guessed []byte
-	var message string = "How's it hanging?"
-	var status int = 0
-
 	for {
 		clear()
-		banner(false)
+		banner(true)
 		hangman(message, status)
 
 		// Lose state (Hangman is complete)
@@ -112,7 +112,7 @@ func playGame() {
 	}
 }
 
-func restart(message string, status, diff int, letters []byte) {
+func restart(message string, status int, letters []byte) {
 	clear()
 	banner(false)
 	hangman(message, status)
@@ -165,7 +165,7 @@ func getWord() string {
 	return words[x]
 }
 
-func banner(menu bool) {
+func banner(game bool) {
 	fmt.Println()
 	fmt.Println()
 	file, err := os.ReadFile("database/ressource/banner.txt")
@@ -173,7 +173,7 @@ func banner(menu bool) {
 		log.Fatal(err)
 	}
 	line := strings.Split(string(file), "/n")
-	for i := 0; i < len(line)-1; i++ {
+	for i := 0; i < len(line); i++ {
 		fmt.Print(string(line[i]))
 	}
 }
