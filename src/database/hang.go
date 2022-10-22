@@ -2,301 +2,100 @@ package database
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
-	"os/exec"
-	"os/signal"
-	"runtime"
 	"strings"
-	"syscall"
-	"time"
 )
 
-var guessed []byte
-var message string = "How's it hanging?"
-var status int = 0
+var maxTries = 10
 
-func Play() {
-	playGame()
-}
-
-func init() {
-	sigs := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go onCtrlC(sigs, done)
-	exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
-	exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
-}
-
-func playGame() {
-	word := strings.ToUpper(getWord())
-	letters := []byte(word)
-
-	for {
-		clear()
-		banner(true)
-		hangman(message, status)
-
-		// Lose state (Hangman is complete)
-		if status >= 10 {
-			message = "RIP, dude."
-			restart(message, status, letters)
-		}
-		spaces(word + word) // Bubblegum solution: Double the word's length to match word length in restart().
-		//Loop through answered letters
-		fmt.Print("                 ")
-		var hidden []byte
-		for i := 0; i < len(letters); i++ {
-			if hasKey(guessed, letters[i]) {
-				fmt.Print(strings.ToUpper(string(letters[i])) + " ") //Show guessed letters
-			} else if letters[i] == '-' {
-				guessed = append(guessed, '-') //Show lines in words.
-				fmt.Print("- ")
-			} else {
-				fmt.Print("_ ")
-				hidden = append(hidden, '_') //Hide unknown letters
-			}
-		}
-
-		// Win state (No hidden letters left)
-		if !hasKey(hidden, '_') {
-			message = "You survived. Play again?"
-			restart(message, status, letters)
-		}
-		fmt.Println()
-		fmt.Println()
-		fmt.Println("                       ( Press key )")
-		fmt.Println()
-		fmt.Println()
-
-		//Variables for checking input
-		var keys []byte
-		isLetter := false
-		isNumber := false
-		keys = make([]byte, 1)
-		os.Stdin.Read(keys)
-		key := keys[0]
-
-		//Get key category for later checking (For readability of code)
-		switch {
-		case key >= 'a' && key <= 'z' || key >= 'A' && key <= 'Z':
-			isLetter = true
-		case key >= '0' && key <= '9':
-			isNumber = true
-		case key == 27:
-			Play()
-		default:
-		}
-
-		guess := strings.ToUpper(string(key))
-
-		//Check key press and act accordingly.
-		switch {
-		case hasKey(letters, key) && hasKey(guessed, key) && isLetter:
-			message = "You already got \"" + guess + "\", bro."
-			status++
-		case hasKey(letters, key) && !hasKey(guessed, key) && isLetter:
-			message = "Yep! It has \"" + guess + "\"."
-			guessed = append(guessed, key)
-		case !isLetter && !isNumber:
-			message = "Not a letter!"
-		case isNumber:
-			message = "That's... a number..."
-		default:
-			message = "Nope! No \"" + guess + "\"."
-			status++
-		}
-	}
-}
-
-func restart(message string, status int, letters []byte) {
-	clear()
-	banner(false)
-	hangman(message, status)
-
-	// Separate letters by space and show the word.
-	var word string
-	for i := 0; i < len(letters); i++ {
-		word += strings.ToUpper(string(letters[i])) + " "
-	}
-
-	fmt.Print("                 ")
-	spaces(word)
-	fmt.Print(word)
-
-	fmt.Println("\n")
-	fmt.Print("                         ( Press R to restart ) \n")
-	fmt.Print("                         ( Press Esc or Q to go to menu ) ")
-
-	for {
-		var keys []byte
-		keys = make([]byte, 1)
-		os.Stdin.Read(keys)
-		key := keys[0]
-		switch {
-		case key == 'R' || key == 'r':
-			status = 0
-			message = ""
-			playGame()
-		case key == 27 || key == 'Q' || key == 'q':
-			Play()
-		default:
-		}
-	}
-}
-func getWord() string {
-	wordfile, err := os.Open("database/ressource/words.txt")
+func (hang *Hangman) getGuess() string {
+	reader := bufio.NewReader(os.Stdin)
+	guess, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer wordfile.Close()
-	scanner := bufio.NewScanner(wordfile)
-	scanner.Split(bufio.ScanLines)
-	var words []string
-	for scanner.Scan() {
-		words = append(words, scanner.Text())
+	guess = strings.TrimSpace(guess)
+	if guess == "" {
+		fmt.Println("please enter a letter")
+		return guess
 	}
-	rand.Seed(time.Now().UnixNano())
-	x := rand.Intn(len(words))
-	fmt.Println(words[x])
-	return words[x]
+	if strings.Contains(strings.Join(hang.try, ""), guess) {
+		fmt.Println("You've already guesses that letter. Please select another one.")
+		return ""
+	}
+	if hang.verbose {
+		fmt.Printf("This guess %v \n", guess)
+	}
+	hang.numTries++
+	hang.try = append(hang.try, guess)
+	return guess
 }
 
-func banner(game bool) {
-	fmt.Println()
-	fmt.Println()
-	file, err := os.ReadFile("database/ressource/banner.txt")
-	if err != nil {
-		log.Fatal(err)
+func (hang *Hangman) isMatch(guess string) bool {
+	if strings.Contains(hang.word, guess) {
+		if hang.verbose {
+			fmt.Printf("%v is a match for %v word \n", guess, hang.word)
+		}
+		return true
 	}
-	line := strings.Split(string(file), "/n")
-	for i := 0; i < len(line); i++ {
-		fmt.Print(string(line[i]))
-	}
-}
-
-func hangman(message string, status int) {
-	fmt.Println()
-	fmt.Println()
-	file, err := os.ReadFile("database/ressource/hangman.txt")
-	if err != nil {
-		panic(err)
-	}
-	line := strings.Split(string(file), "/n")
-	switch {
-	case status == 0:
-		fmt.Println()
-		for i := 0; i < 6; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 1:
-		fmt.Println()
-		for i := 7; i < 15; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 2:
-		fmt.Println()
-		for i := 16; i < 26; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 3:
-		fmt.Println()
-		for i := 27; i < 37; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 4:
-		fmt.Println()
-		for i := 38; i < 48; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 5:
-		fmt.Println()
-		for i := 49; i < 59; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 6:
-		fmt.Println()
-		for i := 60; i < 70; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 7:
-		fmt.Println()
-		for i := 71; i < 81; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 8:
-		fmt.Println()
-		for i := 82; i < 92; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 9:
-		fmt.Println()
-		for i := 93; i < 103; i++ {
-			fmt.Println(line[i])
-		}
-	case status == 10:
-		fmt.Println()
-		for i := 104; i < 114; i++ {
-			fmt.Println(line[i])
-		}
-	}
-	fmt.Println()
-}
-
-func hasKey(slice []byte, key byte) bool {
-	for _, a := range slice {
-		if strings.ToUpper(string(a)) == strings.ToUpper(string(key)) {
-			return true
-		}
+	if hang.verbose {
+		fmt.Printf("%v is NOT a match for %v word \n", guess, hang.word)
 	}
 	return false
 }
 
-func spaces(msg string) {
-	space := 27 - len(msg)
-	for i := 0; i < space; i++ {
-		fmt.Print(" ")
+func (hang *Hangman) updateWordState(letter string) {
+	if letter == " " {
+		for i := 0; i < len(hang.word); i++ {
+			hang.wordStatus = append(hang.wordStatus, "_")
+		}
+	} else {
+		for i, l := range hang.word {
+			if letter == string(l) {
+				hang.wordStatus[i] = letter
+			}
+		}
 	}
 }
 
-func onCtrlC(sigs chan os.Signal, done chan bool) {
-	sig := <-sigs
-	fmt.Println()
-	fmt.Println(sig)
-	done <- true
-	cleanRun()
-	clear()
-	os.Exit(1)
+func (hang *Hangman) continueGame() bool {
+	if len(hang.try) == hang.maxTry {
+		fmt.Println("you've finished your hangman game, losing.")
+		return false
+	}
+	if strings.Join(hang.wordStatus, "") == hang.word {
+		fmt.Println("you've finished your hangman game, and you've won, congrats!")
+		return false
+	}
+	return true
 }
 
-func escape() {
-	fmt.Println("Exiting...")
-	cleanRun()
-	clear()
-	os.Exit(0)
-}
+func Play() {
 
-func cleanRun() {
-	exec.Command("stty", "-F", "/dev/tty", "echo").Run()
-}
+	verbose := flag.Bool("v", false, "verbose mode for debugging purposes")
+	flag.Parse()
 
-func clear() {
-	goos := runtime.GOOS
-	switch {
-	case goos == "linux" || goos == "darwin":
-		cmd := exec.Command("clear")
-		cmd.Stdout = os.Stdout
-		cmd.Run()
-	case goos == "windows":
-		cmd := exec.Command("cls")
-		cmd.Stdout = os.Stdout
-		cmd.Run()
-	default:
-		fmt.Println("Screen clear not supported on your OS.")
-		fmt.Println("Please contact author.")
-		fmt.Println()
+	fmt.Printf(`Welcome to Hangman! I will choose a random word, and you will guess letters you think the word contains.
+    You have %v guesses`, maxTries)
+
+	game := Hangman{
+		word:    GetWord(),
+		maxTry:  maxTries,
+		verbose: *verbose,
+	}
+	game.updateWordState(" ")
+	if game.verbose {
+		fmt.Printf("Word: %v \n", game.word)
+	}
+
+	for game.continueGame() {
+		game.DrawBoard()
+		guess := game.getGuess()
+		if game.isMatch(guess) {
+			game.updateWordState(guess)
+		}
 	}
 }
