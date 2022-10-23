@@ -11,7 +11,7 @@ func (hang *Hangman) DrawBoard() {
 	hang.print = ReadHangmansFile()
 	tableaux := []string{
 		fmt.Sprint("vous avez ", hang.maxTry-hang.numTries, " essais"),
-		fmt.Sprint("vaus avez deja essaye : ", hang.lettersTried),
+		fmt.Sprint("vous avez deja essaye : ", hang.lettersTried),
 		fmt.Sprint("le mot est : ", hang.wordStatus),
 	}
 	for _, line := range tableaux {

@@ -34,6 +34,14 @@ func (hang *Hangman) getGuess() string {
 		PrintSlowl("Vous devez entrer une lettre !\n", 1)
 		return ""
 	}
+	if strings.Contains("ABCDEFGHIJKLMNOPQRSTUVWXYZ", guess) {
+		PrintSlowl("Vous devez entrer une lettre minuscule !\n", 1)
+		return ""
+	}
+	if strings.Contains("&é'(-è_çà)=°~#{[|`@]}$£¤µ%ù*+§/!.,:;?<>", guess) {
+		PrintSlowl("Vous devez entrer une lettre !\n", 1)
+		return ""
+	}
 	hang.lettersTried = append(hang.lettersTried, guess)
 	return guess
 }
