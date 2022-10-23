@@ -18,6 +18,7 @@ type Hangman struct {
 	numTries     int
 	word         string
 	verbose      bool
+	print        []string
 }
 
 func GetWord() string {
