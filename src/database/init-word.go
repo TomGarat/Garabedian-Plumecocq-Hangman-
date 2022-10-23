@@ -2,7 +2,6 @@ package database
 
 import (
 	"bufio"
-	"fmt"
 	"math/rand"
 	"os"
 	"time"
@@ -13,12 +12,12 @@ var (
 )
 
 type Hangman struct {
-	wordStatus []string
-	try        []string
-	maxTry     int
-	numTries   int
-	word       string
-	verbose    bool
+	wordStatus   []string
+	lettersTried []string
+	maxTry       int
+	numTries     int
+	word         string
+	verbose      bool
 }
 
 func GetWord() string {
@@ -35,6 +34,5 @@ func GetWord() string {
 	}
 	rand.Seed(time.Now().UnixNano())
 	x := rand.Intn(len(line))
-	fmt.Println(line[x])
 	return line[x]
 }

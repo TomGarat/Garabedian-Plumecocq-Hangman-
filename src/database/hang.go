@@ -2,11 +2,11 @@ package database
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 var maxTries = 10
@@ -19,18 +19,15 @@ func (hang *Hangman) getGuess() string {
 	}
 	guess = strings.TrimSpace(guess)
 	if guess == "" {
-		fmt.Println("please enter a letter")
+		PrintSlowl("Vous devez entrer une lettre !\n", 1)
 		return guess
 	}
-	if strings.Contains(strings.Join(hang.try, ""), guess) {
-		fmt.Println("You've already guesses that letter. Please select another one.")
+	if strings.Contains(strings.Join(hang.lettersTried, ""), guess) {
+		PrintSlowl("Vous avez déjà essayé cette lettre !\n", 1)
 		return ""
 	}
-	if hang.verbose {
-		fmt.Printf("This guess %v \n", guess)
-	}
 	hang.numTries++
-	hang.try = append(hang.try, guess)
+	hang.lettersTried = append(hang.lettersTried, guess)
 	return guess
 }
 
@@ -62,12 +59,12 @@ func (hang *Hangman) updateWordState(letter string) {
 }
 
 func (hang *Hangman) continueGame() bool {
-	if len(hang.try) == hang.maxTry {
-		fmt.Println("you've finished your hangman game, losing.")
+	if len(hang.lettersTried) == hang.maxTry {
+		PrintSlowl("Vous avez perdu !", 1)
 		return false
 	}
 	if strings.Join(hang.wordStatus, "") == hang.word {
-		fmt.Println("you've finished your hangman game, and you've won, congrats!")
+		PrintSlowl("Vous avez gagné !", 1)
 		return false
 	}
 	return true
@@ -75,21 +72,25 @@ func (hang *Hangman) continueGame() bool {
 
 func Play() {
 
-	verbose := flag.Bool("v", false, "verbose mode for debugging purposes")
-	flag.Parse()
-
-	fmt.Printf(`Welcome to Hangman! I will choose a random word, and you will guess letters you think the word contains.
-    You have %v guesses`, maxTries)
+	tableaux := []string{
+		"Bienvenue dans le jeu du pendu !",
+		fmt.Sprintf("Vous avez %v essais pour trouver le mot mystère", maxTries),
+		"Bon courage !",
+	}
+	for _, line := range tableaux {
+		PrintSlowl(line+"\n", 1)
+		time.Sleep(1 * time.Second)
+	}
 
 	game := Hangman{
-		word:    GetWord(),
-		maxTry:  maxTries,
-		verbose: *verbose,
+		wordStatus:   []string{},
+		lettersTried: []string{},
+		maxTry:       maxTries,
+		numTries:     0,
+		word:         GetWord(),
+		verbose:      false,
 	}
 	game.updateWordState(" ")
-	if game.verbose {
-		fmt.Printf("Word: %v \n", game.word)
-	}
 
 	for game.continueGame() {
 		game.DrawBoard()
