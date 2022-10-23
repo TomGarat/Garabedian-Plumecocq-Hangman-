@@ -26,22 +26,16 @@ func (hang *Hangman) getGuess() string {
 		PrintSlowl("Vous avez déjà essayé cette lettre !\n", 1)
 		return ""
 	}
-	hang.numTries++
+	if len(guess) > 1 {
+		PrintSlowl("Vous devez entrer une seule lettre !\n", 1)
+		return ""
+	}
+	if strings.Contains("12345678910", guess) {
+		PrintSlowl("Vous devez entrer une lettre !\n", 1)
+		return ""
+	}
 	hang.lettersTried = append(hang.lettersTried, guess)
 	return guess
-}
-
-func (hang *Hangman) isMatch(guess string) bool {
-	if strings.Contains(hang.word, guess) {
-		if hang.verbose {
-			fmt.Printf("%v is a match for %v word \n", guess, hang.word)
-		}
-		return true
-	}
-	if hang.verbose {
-		fmt.Printf("%v is NOT a match for %v word \n", guess, hang.word)
-	}
-	return false
 }
 
 func (hang *Hangman) updateWordState(letter string) {
@@ -51,20 +45,24 @@ func (hang *Hangman) updateWordState(letter string) {
 		}
 	} else {
 		for i, l := range hang.word {
-			if letter == string(l) {
+			if string(l) == letter {
 				hang.wordStatus[i] = letter
 			}
+		}
+		if !strings.Contains(hang.word, letter) {
+			hang.numTries++
+			PrintSlowl(hang.print[hang.numTries], 1)
 		}
 	}
 }
 
 func (hang *Hangman) continueGame() bool {
-	if len(hang.lettersTried) == hang.maxTry {
-		PrintSlowl("Vous avez perdu !", 1)
+	if hang.numTries >= hang.maxTry {
+		PrintSlowl("Vous avez perdu !\n", 1)
 		return false
 	}
 	if strings.Join(hang.wordStatus, "") == hang.word {
-		PrintSlowl("Vous avez gagné !", 1)
+		PrintSlowl("Vous avez gagné !\n", 1)
 		return false
 	}
 	return true
@@ -88,15 +86,13 @@ func Play() {
 		maxTry:       maxTries,
 		numTries:     0,
 		word:         GetWord(),
-		verbose:      false,
+		successful:   false,
 	}
 	game.updateWordState(" ")
 
 	for game.continueGame() {
 		game.DrawBoard()
 		guess := game.getGuess()
-		if game.isMatch(guess) {
-			game.updateWordState(guess)
-		}
+		game.updateWordState(guess)
 	}
 }

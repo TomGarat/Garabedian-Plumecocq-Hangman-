@@ -13,7 +13,6 @@ func (hang *Hangman) DrawBoard() {
 		fmt.Sprint("vous avez ", hang.maxTry-hang.numTries, " essais"),
 		fmt.Sprint("vaus avez deja essaye : ", hang.lettersTried),
 		fmt.Sprint("le mot est : ", hang.wordStatus),
-		hang.print[hang.numTries],
 	}
 	for _, line := range tableaux {
 		PrintSlowl(line+"\n", 1)
