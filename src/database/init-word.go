@@ -2,7 +2,6 @@ package database
 
 import (
 	"bufio"
-	"fmt"
 	"math/rand"
 	"os"
 	"time"
@@ -36,6 +35,5 @@ func GetWord() string {
 	}
 	rand.Seed(time.Now().UnixNano())
 	x := rand.Intn(len(line))
-	fmt.Print(line[x])
 	return line[x]
 }
