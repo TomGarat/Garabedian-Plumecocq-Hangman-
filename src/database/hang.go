@@ -58,8 +58,7 @@ func (hang *Hangman) continueGame() bool { //cette fonction permet de vérifier 
 		return false
 	}
 	if strings.Join(hang.wordStatus, "") == hang.word { //si le mot est trouvé, on affiche un message de victoire et on retourne false
-		PrintSlowl("Vous avez gagné !\n", 1)
-
+		AfficheWin() //on affiche le message de victoire
 		return false
 	}
 	return true
