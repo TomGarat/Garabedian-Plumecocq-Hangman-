@@ -31,8 +31,16 @@ func Banner() { //cette fonction permet d'afficher le logo du jeu
 	fmt.Println("")
 }
 
-func AfficheWin() { //cette fonction permet d'afficher le message de victoire
-	PrintSlowl("Bravo vous avez gagne\n", 1)
+func AfficheWin() {
+	var filename string = "database/ressource/win.txt"
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		fmt.Printf("Error parsing file %s\n", filename)
+		fmt.Println(err)
+	}
+	PrintSlowl(string(content), 1)
+	fmt.Println("")
+	fmt.Println("")
 }
 func PrintSlowl(text string, delay int) { //cette fonction permet d'afficher le texte caractère par caractère ps c'est pour ethan :)
 	for _, char := range text {
