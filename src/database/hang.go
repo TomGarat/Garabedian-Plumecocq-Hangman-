@@ -18,10 +18,6 @@ func (hang *Hangman) getGuess() string {
 		log.Fatal(err)
 	}
 	guess = strings.TrimSpace(guess)
-	if guess == "" {
-		PrintSlowl("Vous devez entrer une lettre !\n", 1)
-		return guess
-	}
 	if strings.Contains(strings.Join(hang.lettersTried, ""), guess) {
 		PrintSlowl("Vous avez déjà essayé cette lettre !\n", 1)
 		return ""
@@ -30,15 +26,7 @@ func (hang *Hangman) getGuess() string {
 		PrintSlowl("Vous devez entrer une seule lettre !\n", 1)
 		return ""
 	}
-	if strings.Contains("12345678910", guess) {
-		PrintSlowl("Vous devez entrer une lettre !\n", 1)
-		return ""
-	}
-	if strings.Contains("ABCDEFGHIJKLMNOPQRSTUVWXYZ", guess) {
-		PrintSlowl("Vous devez entrer une lettre minuscule !\n", 1)
-		return ""
-	}
-	if strings.Contains("&é'(-è_çà)=°~#{[|`@]}$£¤µ%ù*+§/!.,:;?<>", guess) {
+	if !strings.Contains("abcdefghijklmnopqrstuvwxyz", guess) {
 		PrintSlowl("Vous devez entrer une lettre !\n", 1)
 		return ""
 	}
